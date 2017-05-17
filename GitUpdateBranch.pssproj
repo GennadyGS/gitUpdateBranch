@@ -28,6 +28,8 @@
   <ItemGroup />
   <ItemGroup>
     <Compile Include="gitUpdateBranch.ps1" />
+    <Compile Include="InputSmtpPassword.ps1" />
+    <Compile Include="MailConfig.ps1" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Target Name="Build" />
