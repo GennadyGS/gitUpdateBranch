@@ -14,16 +14,21 @@ if (Test-Path "$PSScriptRoot\MailConfig.private.ps1") {
 
 Function RunGit {
     param (
-        $gitArgsStr,
-        [switch]$noCheck
+        $gitArgsStr
     )
 
     Write-Host "git $gitArgsStr" -ForegroundColor yellow
 
     Invoke-Expression "git $gitArgsStr"
-    if ((!$noCheck) -and  ($LastExitCode -ne 0)) {
+    if ($LastExitCode -ne 0) {
         throw "'git $gitArgsStr' returned code $LastExitCode"
     }
+}
+
+Function CheckGitStash {
+    $gitStashOutput = RunGit "stash"
+    $gitStashOutput | Write-Host
+    return [bool] ($gitStashOutput | Select-String "HEAD is now at")
 }
 
 Function ReportError {
@@ -68,11 +73,14 @@ catch {
 Write-Output "Current directory is $PWD"
 try {
     try {
+        $changesShashed = CheckGitStash
         RunGit "stash"
         RunGit "pull -p"
         RunGit "merge $remoteName/$sourceBranchName"
         RunGit "push"
-        RunGit -noCheck "stash pop"
+        if ($changesShashed) {
+            RunGit "stash pop"
+        }
     }
     catch {
         Write-Error -ErrorRecord $Error[0]
