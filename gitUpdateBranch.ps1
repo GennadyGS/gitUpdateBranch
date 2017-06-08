@@ -4,7 +4,7 @@
 )
 
 $outputPath = "$PSScriptRoot\Output"
-$timeSuffix = Get-Date -format yyyyMMddHHmmss
+$timeSuffix = Get-Date -format _yyyyMMdd_HHmmss
 $logFileName = "$outputPath\gitUpdateBranch$timeSuffix.log"
 
 . $PSScriptRoot\MailConfig.ps1
