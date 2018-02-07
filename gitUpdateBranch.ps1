@@ -1,6 +1,7 @@
 ﻿param(
     $remoteName = 'origin',
-    $sourceBranchName = 'master'
+    $sourceBranchName = 'master',
+    $targetBranchName
 )
 
 $outputPath = "$PSScriptRoot\Output"
@@ -29,6 +30,10 @@ Function CheckGitStash {
     $gitStashOutput = RunGit "stash"
     $gitStashOutput | Write-Host
     return [bool] ($gitStashOutput | Select-String "HEAD is now at")
+}
+
+Function GetCurrentBranch {
+    return [regex]::match((RunGit "status -b")[0], "On branch (.*)").Groups[1].Value
 }
 
 Function ReportError {
@@ -74,10 +79,18 @@ Write-Output "Current directory is $PWD"
 try {
     try {
         $changesShashed = CheckGitStash
-        RunGit "stash"
+        $currentBranch = GetCurrentBranch
+        "current branch is $currentBranch"
+        if ($targetBranchName -and ($currentBranch -ne $targetBranchName)) {
+            RunGit "checkout $targetBranchName"
+            $branchChanged = $true
+        }
         RunGit "pull -p"
         RunGit "merge $remoteName/$sourceBranchName"
         RunGit "push"
+        if ($branchChanged) {
+            RunGit "checkout $currentBranch"
+        }
         if ($changesShashed) {
             RunGit "stash pop"
         }
