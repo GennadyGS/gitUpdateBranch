@@ -8,11 +8,6 @@ $outputPath = "$PSScriptRoot\Output"
 $timeSuffix = Get-Date -format _yyyyMMdd_HHmmss
 $logFileName = "$outputPath\gitUpdateBranch$timeSuffix.log"
 
-. $PSScriptRoot\MailConfig.ps1
-if (Test-Path "$PSScriptRoot\MailConfig.private.ps1") {
-    . $PSScriptRoot\MailConfig.private.ps1
-} 
-
 Function RunGit {
     param (
         $gitArgsStr
@@ -45,9 +40,12 @@ Function ReportError {
     if (Test-Path "$PSScriptRoot\MailConfig.private.ps1") {
         . $PSScriptRoot\MailConfig.private.ps1
     } 
+	if (Test-Path ".\MailConfig.private.ps1") {
+		. .\MailConfig.private.ps1
+	} 
 
     $credentials = New-Object Management.Automation.PSCredential $smtpUserName, ($smtpPassword | ConvertTo-SecureString)
-    $body = "Workspace: $PWD`n" + "RemoteName: $remoteName`n" + "SourceBranchName: $sourceBranchName`n" + "Error message: `n$errorText"
+    $body = "Workspace: $PWD`n" + "RemoteName: $remoteName`n" + "SourceBranchName: $sourceBranchName`n" + "TargetBranchName: $targetBranchName`n" + "Error message: `n$errorText"
     Send-MailMessage `
         -To $mailTo `
         -From $mailFrom `
